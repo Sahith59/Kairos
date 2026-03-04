@@ -45,4 +45,23 @@ python3 scripts/test_ingest.py
 Watch the Cockpit dashboard instantly analyze and highlight critical errors, securely powered by your local Llama 3 model!
 
 ---
+
+## 📈 Enterprise Scaling Strategy (The "Million-Log" Problem)
+*How to evolve LogSage from a single-machine showcase to a global enterprise Observability platform.*
+
+#### 1. Ingestion Layer (Message Queue)
+Applications MUST decouple from the FastAPI ingestion layer. Instead of `POST`ing directly, microservices will stream logs to **Apache Kafka** or **AWS Kinesis**. This prevents API crashes during massive log spikes (e.g., 5 million logs/sec during a broader infrastructure outage). 
+
+#### 2. Stream Processing (Edge Filtering)
+An **Apache Flink** or **Spark Streaming** consumer processes the Kafka firehose. It automatically dumps perfectly normal `INFO` logs into object storage (AWS S3) and only forwards highly suspicious warnings/errors (1% of traffic) to the LogSage analytical pipeline.
+
+#### 3. Enterprise Database Layer
+* **Semantic Cache:** Uses **Redis Cluster** to memoize identical RCA reports with a 5-minute TTL. Drops LLM API calls by 99% during identical cascading failure repeats.
+* **Vector Engine:** Migrates from local ChromaDB to a dedicated, distributed Vector Search cluster like **Milvus** or **Pinecone** for querying billions of historical incidents.
+* **Distributed Graph (GraphRAG):** Uses **Neo4j** to plot dynamic microservice upstream dependencies mapping "blast radius".
+
+#### 4. LLM Inference Layer
+Migrates from a local Mac Ollama process to a cluster of dedicated Cloud GPUs (e.g., NVIDIA A100s) using an optimized, high-throughput inference engine like **vLLM** or **NVIDIA Triton Inference Server** behind a load balancer.
+
+---
 *Built as a portfolio showcase demonstrating advanced Agentic System Engineering, full-stack development, and offline AI architecture.*

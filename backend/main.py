@@ -105,7 +105,7 @@ async def process_log(log: LogEntry):
             
         # Phase 3: Trigger AgentFlow(log, context)
         logger.info("🧠 Forwarding to Local Llama 3 Agent for Analysis...")
-        analysis_report = analyze_anomaly(log.message, past_context_str)
+        analysis_report = analyze_anomaly(log.service_name, log.message, past_context_str)
         
         logger.info("====================================")
         logger.info("📝 AUTO-GENERATED SRE REPORT:")
