@@ -1,0 +1,15 @@
+# Git
+.git
+.gitignore
+
+# Python
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Local Data
+data/
+*.log

@@ -11,6 +11,10 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 - **Enterprise-Ready UI:** Implements Framer Motion and animated interaction patterns for seamless usability.
 - **Dockerized Architecture:** Easily deployable across environments with a single Docker Compose script.
 
+![LogSage Cockpit Dashboard Dashboard showing AI RCA analysis of microservice anomalies](https://raw.githubusercontent.com/Sahith59/LogSage/main/frontend/public/dashboard_preview.png)
+<br>
+![LogSage AI Terminal logs showing real-time agentic reasoning](https://raw.githubusercontent.com/Sahith59/LogSage/main/frontend/public/terminal_preview.png)
+
 ## 🏗️ Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
 * **Backend:** FastAPI, Python 3.13, WebSockets.
@@ -26,23 +30,30 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
    ollama run llama3
    ```
 
-### Running with Docker Compose
-The entire stack is containerized. Start the backend and frontend simultaneously using Docker:
+### Quickstart (Docker Compose)
+The entire LogSage stack (Next.js Frontend, FastAPI Backend, Redis Cache, Neo4j Graph DB) is fully containerized.
 
+Start the infrastructure in the background:
 ```bash
-docker-compose up --build
+docker compose up --build -d
 ```
-* **Frontend Cockpit:** available at `http://localhost:3000`
-* **FastAPI Backend:** available at `http://localhost:8001`
-* **API Documentation:** available at `http://localhost:8001/docs`
 
-### Testing the Pipeline
-To simulate real-time traffic and trigger anomalies, run the bundled test script from a new terminal:
+### Accessing the System
+* **SRE Cockpit UI:** [http://localhost:3000](http://localhost:3000)
+* **Backend API Docs:** [http://localhost:8001/docs](http://localhost:8001/docs)
+* **Neo4j Graph Database:** [http://localhost:7474](http://localhost:7474) *(User: neo4j / Password: password)*
+
+### Simulating a Production Outage
+To witness the AI Agent in action, send a blast of mock error logs to the pipeline:
 ```bash
-source backend/venv/bin/activate
 python3 scripts/test_ingest.py
 ```
-Watch the Cockpit dashboard instantly analyze and highlight critical errors, securely powered by your local Llama 3 model!
+*Watch the Cockpit dashboard instantly highlight the critical errors and generate Root Cause Analysis (RCA) reports powered securely by your local LLM!*
+
+To view the raw AI "Thought Process" in the terminal:
+```bash
+docker compose logs backend -f
+```
 
 ---
 
