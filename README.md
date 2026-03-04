@@ -4,24 +4,24 @@ LogSage is an autonomous Site Reliability Engineering (SRE) assistant designed t
 
 Built with privacy and performance in mind, LogSage ensures that sensitive production logs **never leave your infrastructure.**
 
-## 🚀 Key Features
+## Key Features
 - **Real-time Firehose:** Ingests and streams logs via WebSockets to a stunning, hacker-themed Next.js Cockpit interface.
 - **Local RAG Analyzer:** Uses ChromaDB and Ollama native embedding functions to retrieve context from historical incidents.
 - **Zero-Latency AI:** Fully offline AI analytical pipeline powered by LangChain and the `llama3` LLM.
 - **Enterprise-Ready UI:** Implements Framer Motion and animated interaction patterns for seamless usability.
 - **Dockerized Architecture:** Easily deployable across environments with a single Docker Compose script.
 
-![LogSage Cockpit Dashboard Dashboard showing AI RCA analysis of microservice anomalies](https://raw.githubusercontent.com/Sahith59/LogSage/main/frontend/public/dashboard_preview.png)
+![Dashboard Preview](path/to/your/dashboard/image.png)
 <br>
-![LogSage AI Terminal logs showing real-time agentic reasoning](https://raw.githubusercontent.com/Sahith59/LogSage/main/frontend/public/terminal_preview.png)
+![Terminal Preview](path/to/your/terminal/image.png)
 
-## 🏗️ Architecture Stack
+## Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
 * **Backend:** FastAPI, Python 3.13, WebSockets.
 * **Vector Database:** ChromaDB (Local Persistent).
 * **AI / LLM Engineering:** Ollama (Llama 3), LangChain.
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 1. Install [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
@@ -57,7 +57,7 @@ docker compose logs backend -f
 
 ---
 
-## 📈 Enterprise Scaling Strategy (The "Million-Log" Problem)
+## Enterprise Scaling Strategy (The "Million-Log" Problem)
 *How to evolve LogSage from a single-machine showcase to a global enterprise Observability platform.*
 
 #### 1. Ingestion Layer (Message Queue)
