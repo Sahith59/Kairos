@@ -11,9 +11,13 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 - **Enterprise-Ready UI:** Implements Framer Motion and animated interaction patterns for seamless usability.
 - **Dockerized Architecture:** Easily deployable across environments with a single Docker Compose script.
 
-![Dashboard Preview](path/to/your/dashboard/image.png)
+![Dashboard Preview](<img width="1216" height="873" alt="Pasted Graphic 4" src="https://github.com/user-attachments/assets/f234063b-019c-456d-8233-c93366184ab9" />
+)
 <br>
-![Terminal Preview](path/to/your/terminal/image.png)
+![Terminal Preview](<img width="817" height="909" alt="Pasted Graphic 6" src="https://github.com/user-attachments/assets/541d26ee-fdc1-47d1-8de4-e9593b187364" />
+)
+<img width="1251" height="648" alt="Container CPV usage C" src="https://github.com/user-attachments/assets/d5fac7d3-9703-46fe-842a-8e5c21f76400" />
+
 
 ## Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
