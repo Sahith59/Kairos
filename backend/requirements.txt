@@ -12,3 +12,5 @@ requests
 pandas
 psycopg2-binary
 sentence-transformers
+langgraph
+langchain-ollama

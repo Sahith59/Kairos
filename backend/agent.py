@@ -1,12 +1,15 @@
 import os
-from langchain_community.llms import Ollama
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-import logging
-import os
 import hashlib
+import logging
 import redis
+import operator
 from neo4j import GraphDatabase
+from typing import TypedDict, Annotated, Sequence
+from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
+from langchain_ollama import ChatOllama
+from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import ToolNode
+from tools import AGENT_TOOLS
 
 logger = logging.getLogger(__name__)
 
@@ -24,56 +27,120 @@ try:
 except Exception:
     neo4j_driver = None
 
-# Initialize Local LLM via Ollama
-# This requires the Ollama desktop app to be running and `ollama run llama3` to have been executed.
+# Initialize Local LLM via Ollama and bind tools
 try:
-    llm = Ollama(
+    llm = ChatOllama(
         base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
-        model="llama3", 
+        model="llama3.1", 
+        temperature=0.1
+    ).bind_tools(AGENT_TOOLS)
+    
+    critic_llm = ChatOllama(
+        base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
+        model="llama3.1", 
         temperature=0.1
     )
 except Exception as e:
     logger.error(f"Failed to initialize Ollama: {e}")
     llm = None
+    critic_llm = None
 
-# Define the Prompt Template for the SRE Agent
-# This prompt forces the AI to use the Vector DB context and Graph DB dependencies.
-sre_prompt = PromptTemplate(
-    input_variables=["error_log", "past_context", "graph_context"],
-    template="""You are 'LogSage', an elite Site Reliability Engineer (SRE) AI Assistant.
-Your job is to analyze system anomalies and provide actionable fixes.
+# -------------------------------------------------------------
+# LangGraph Architecture Definition
+# -------------------------------------------------------------
 
-A new critical error just occurred in the system:
-<NEW_ERROR>
-{error_log}
-</NEW_ERROR>
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], operator.add]
+    service_name: str
+    error_log: str
+    graph_context: str
+    past_context: str
+    revision_count: int
+    draft_rca: str
 
-Here is the Graph RAG Context (System Dependencies):
-<GRAPH_CONTEXT>
-{graph_context}
-</GRAPH_CONTEXT>
+def investigator_node(state: AgentState):
+    """The Primary RCA Drafter. It can use tools before generating the report."""
+    sys_msg = SystemMessage(content=f"""You are an elite SRE Investigator.
+Target Service: {state['service_name']}
+Current Error: {state['error_log']}
 
-Here is the historical context of a very similar issue that was solved in the past:
-<HISTORICAL_CONTEXT>
-{past_context}
-</HISTORICAL_CONTEXT>
+Upstream Dependencies (GraphRAG): {state['graph_context']}
+Historical Context (Vector DB): {state['past_context']}
 
-Based ONLY on the error and the historical context provided above, generate a strict 3-part report:
-1.  **Root Cause Analysis (RCA):** Explain what exactly failed and why.
-2.  **Actionable Fix:** Provide the exact steps or code/config changes needed to fix it right now.
-3.  **Prevention:** One sentence on how to stop this from happening again.
+You have tools available to check system health, restart pods, or query DB latency. Use them if there's ambiguity about the root cause.
+If you have used tools or have enough context, draft a highly technical 3-part RCA:
+1. **Root Cause Analysis (RCA):**
+2. **Actionable Fix:**
+3. **Prevention:**
+""")
+    response = llm.invoke([sys_msg] + state["messages"])
+    
+    if hasattr(response, "tool_calls") and response.tool_calls:
+        return {"messages": [response]}
+        
+    return {"messages": [response], "draft_rca": response.content}
 
-Keep it highly technical, concise, and professional. Do not invent information outside of the provided context.
+def should_continue(state: AgentState):
+    """Router: if the LLM invoked a tool, route to Tools. Else route to Critic."""
+    last_message = state["messages"][-1]
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"
+    return "critic"
 
-YOUR SRE REPORT:
-"""
-)
+def critic_node(state: AgentState):
+    """The Secondary Agent. Reviews the RCA for hallucinations and completeness."""
+    if state["revision_count"] >= 2:
+        return {"messages": []} # Force end after 2 loops
+        
+    draft = state.get("draft_rca", "")
+    
+    sys_msg = SystemMessage(content=f"""You are a strict SRE Critic. Review the Investigator's drafted RCA.
+Original Error: {state['error_log']}
 
-# Chain the prompt and the LLM
+If the RCA makes logical sense, doesn't hallucinate missing info, and explicitly contains the 3 parts (RCA, Fix, Prevention), reply with EXACTLY "APPROVED". Do not say anything else.
+If it is flawed, hallucinates, or is incomplete, reply with a short critique telling the Investigator what to fix, starting with the word "REJECTED: ".""")
+
+    response = critic_llm.invoke([sys_msg, HumanMessage(content=draft)])
+    
+    if "APPROVED" in response.content.upper():
+        # We are done
+        return {"messages": [response]}
+    else:
+        # Ask for revision (critique will be passed back as a message)
+        critique_content = response.content if "REJECTED" in response.content.upper() else f"REJECTED: {response.content}"
+        critique_msg = HumanMessage(content=critique_content)
+        return {"messages": [critique_msg], "revision_count": state["revision_count"] + 1}
+
+def route_critic(state: AgentState):
+    """Router: if approved, End. If rejected, loop back to investigator."""
+    if state["revision_count"] >= 2:
+        return END
+    last_message = state["messages"][-1]
+    if "REJECTED" in last_message.content.upper():
+        return "investigator"
+    return END
+
+# Build Graph
 if llm:
-    agent_chain = sre_prompt | llm | StrOutputParser()
+    workflow = StateGraph(AgentState)
+    workflow.add_node("investigator", investigator_node)
+    
+    # ToolNode automatically handles the execution of bound tools
+    workflow.add_node("tools", ToolNode(AGENT_TOOLS)) 
+    workflow.add_node("critic", critic_node)
+    
+    workflow.add_edge(START, "investigator")
+    workflow.add_conditional_edges("investigator", should_continue, {"tools": "tools", "critic": "critic"})
+    workflow.add_edge("tools", "investigator")
+    workflow.add_conditional_edges("critic", route_critic, {"investigator": "investigator", END: END})
+    
+    app_graph = workflow.compile()
 else:
-    agent_chain = None
+    app_graph = None
+
+# -------------------------------------------------------------
+# Standard Logic
+# -------------------------------------------------------------
 
 def get_upstream_dependencies(service_name: str) -> str:
     """Queries Neo4j Graph Database for service dependencies."""
@@ -87,7 +154,7 @@ def get_upstream_dependencies(service_name: str) -> str:
             ''', name=service_name)
             deps = [record["up"] for record in result]
             if deps:
-                return f"CRITICAL CONTEXT: The {service_name} depends on the following upstream services: {', '.join(deps)}. A failure here might actually be caused by them dropping connections or failing."
+                return f"CRITICAL CONTEXT: {service_name} depends on the following upstream services: {', '.join(deps)}."
             return f"{service_name} has no known upstream dependencies in the graph."
     except Exception as e:
         logger.error(f"Neo4j Error: {e}")
@@ -95,10 +162,10 @@ def get_upstream_dependencies(service_name: str) -> str:
 
 def analyze_anomaly(service_name: str, error_log: str, past_context: str) -> str:
     """
-    Runs the Agentic flow to diagnose an error, utilizing Semantic Cache and Graph RAG.
+    Runs the LangGraph Agentic flow to diagnose an error, utilizing Semantic Cache, tools, and Graph RAG.
     """
-    if not agent_chain:
-        return "ERROR: Offline mode. Model not loaded. Ensure Ollama is running."
+    if not app_graph:
+        return "ERROR: LangGraph offline. Model not loaded. Ensure Ollama is running."
 
     # 1. Semantic Caching layer (Redis)
     cache_key = hashlib.md5(f"{service_name}:{error_log}".encode()).hexdigest()
@@ -106,41 +173,47 @@ def analyze_anomaly(service_name: str, error_log: str, past_context: str) -> str
         try:
             cached = redis_client.get(cache_key)
             if cached:
-                logger.info("⚡ SEMANTIC CACHE HIT! Returning RCA in 5ms.")
-                return "*(⚡ Served from Semantic Cache - 5ms)*\n\n" + cached
+                logger.info("SEMANTIC CACHE HIT! Returning RCA in 5ms.")
+                return "(Served from Semantic Cache - 5ms)\n\n" + cached
         except Exception as e:
             logger.error(f"Redis Error: {e}")
 
     # 2. Graph RAG layer (Neo4j)
     graph_context = get_upstream_dependencies(service_name)
 
-    logger.info(f"🤖 LLM Agent is analyzing the anomaly (Cache Miss)...")
+    logger.info(f"LangGraph Agent Loop initiated (Cache Miss)...")
     try:
-        # Generate the response
-        response = agent_chain.invoke({
+        initial_state = {
+            "messages": [HumanMessage(content="Investigate this error and write an RCA.")],
+            "service_name": service_name,
             "error_log": f"[{service_name}] {error_log}",
+            "graph_context": graph_context,
             "past_context": past_context if past_context else "No historical precedent found.",
-            "graph_context": graph_context
-        })
+            "revision_count": 0,
+            "draft_rca": ""
+        }
         
-        # 3. Cache the analysis (TTL 5 minutes)
+        # Execute the full LangGraph Loop
+        final_state = app_graph.invoke(initial_state)
+        
+        # Extract the final RCA generated by the investigator node
+        final_report = final_state.get("draft_rca", "Agent failed to generate a report.")
+                
+        # Annotate that it was ran through LangGraph
+        final_report = "(Validated by LangGraph SRE Critic Loop)\n\n" + final_report
+        
+        # 3. Cache the validated analysis (TTL 5 minutes)
         if redis_client:
             try:
-                redis_client.setex(cache_key, 300, response)
+                redis_client.setex(cache_key, 300, final_report)
             except Exception as e:
                 logger.error(f"Redis Write Error: {e}")
                 
-        return response
+        return final_report
     except Exception as e:
-        logger.error(f"LLM Generation failed: {e}")
-        return f"Agent Analysis Failed: {e}"
+        logger.error(f"LangGraph execution failed: {e}")
+        return f"LangGraph Execution Failed: {e}"
 
 if __name__ == "__main__":
-    # Quick Test
-    test_svc = "OrderService"
-    test_log = "CRITICAL: Database connection failed Timeout"
-    mock_context = "ROOT CAUSE: The PostgreSQL connection pool was exhausted due to a spike in traffic causing max_connections to be reached. Resolution: Increased max_connections to 500 in postgresql.conf and deployed PgBouncer to manage the connection pool effectively."
-    
-    print("Testing Local LLM Agent...")
-    print(analyze_anomaly(test_svc, test_log, mock_context))
-
+    # Standard testing script.
+    print("Testing LangGraph Module...")

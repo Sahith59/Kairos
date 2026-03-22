@@ -78,7 +78,7 @@ async def process_log(log: LogEntry):
         is_anomaly = True
         
     if is_anomaly:
-        logger.warning(f"⚠️ ANOMALY DETECTED: {log.message}")
+        logger.warning(f"ANOMALY DETECTED: {log.message}")
         
         # Broadcast anomaly to UI immediately
         await manager.broadcast({
@@ -91,24 +91,24 @@ async def process_log(log: LogEntry):
         })
         
         # Phase 2: Retrieve Historical Context
-        logger.info("🔍 Searching Vector DB for similar past incidents...")
+        logger.info("Searching Vector DB for similar past incidents...")
         search_results = search_incidents(log.message, n_results=1)
         
         past_context_str = ""
         if search_results['documents'] and len(search_results['documents'][0]) > 0:
             best_match_doc = search_results['documents'][0][0]
             metadata = search_results['metadatas'][0][0]
-            logger.info("✅ Found relevant past incident context.")
+            logger.info("Found relevant past incident context.")
             past_context_str = f"Past Log: {best_match_doc}\nResolution: {metadata.get('resolution', 'N/A')}"
         else:
-            logger.info("❌ No similar past incidents found.")
+            logger.info("No similar past incidents found.")
             
         # Phase 3: Trigger AgentFlow(log, context)
-        logger.info("🧠 Forwarding to Local Llama 3 Agent for Analysis...")
+        logger.info("Forwarding to Local Agent for Analysis...")
         analysis_report = analyze_anomaly(log.service_name, log.message, past_context_str)
         
         logger.info("====================================")
-        logger.info("📝 AUTO-GENERATED SRE REPORT:")
+        logger.info("AUTO-GENERATED SRE REPORT:")
         logger.info(analysis_report)
         logger.info("====================================")
         

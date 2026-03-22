@@ -7,7 +7,9 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 ## Key Features
 - **Real-time Firehose:** Ingests and streams logs via WebSockets to a stunning, hacker-themed Next.js Cockpit interface.
 - **Local RAG Analyzer:** Uses ChromaDB and Ollama native embedding functions to retrieve context from historical incidents.
-- **Zero-Latency AI:** Fully offline AI analytical pipeline powered by LangChain and the `llama3` LLM.
+- **LangGraph Multi-Agent Loop:** Utilizes a cyclic, self-reflective state machine where an Investigator agent drafts the RCA and a Lead Critic strictly validates it, explicitly preventing LLM hallucinations.
+- **Autonomous Tool Execution:** The AI dynamically triggers executable Python bindings (e.g., querying database latency, checking pod health) to ground its responses in real-time system metrics.
+- **Zero-Latency AI:** Fully offline AI analytical pipeline powered by LangGraph, LangChain, and the `llama3.1` LLM.
 - **Enterprise-Ready UI:** Implements Framer Motion and animated interaction patterns for seamless usability.
 - **Dockerized Architecture:** Easily deployable across environments with a single Docker Compose script.
 
@@ -17,21 +19,22 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 <img width="817" height="909" alt="Pasted Graphic 6" src="https://github.com/user-attachments/assets/541d26ee-fdc1-47d1-8de4-e9593b187364" />
 <br>
 <img width="1251" height="648" alt="Container CPV usage C" src="https://github.com/user-attachments/assets/d5fac7d3-9703-46fe-842a-8e5c21f76400" />
-
+<br>
+![LangGraph Critic Loop Preview](path/to/your/langgraph_loop/image.png)
 
 ## Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
 * **Backend:** FastAPI, Python 3.13, WebSockets.
 * **Vector Database:** ChromaDB (Local Persistent).
-* **AI / LLM Engineering:** Ollama (Llama 3), LangChain.
+* **AI / LLM Engineering:** Ollama (Llama 3.1), LangGraph, LangChain.
 
 ## Getting Started
 
 ### Prerequisites
 1. Install [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
-2. Install [Ollama](https://ollama.com/) and pull the `llama3` model:
+2. Install [Ollama](https://ollama.com/) and pull the `llama3.1` model (required for native Function Calling support):
    ```bash
-   ollama run llama3
+   ollama run llama3.1
    ```
 
 ### Quickstart (Docker Compose)

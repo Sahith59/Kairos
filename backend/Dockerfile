@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 # Install python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install redis neo4j "langchain-ollama>=0.2.0"
+RUN pip install redis neo4j "langchain-ollama>=0.2.0" langgraph
 
 # Copy application code
 COPY . .
