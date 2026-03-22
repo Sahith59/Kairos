@@ -28,8 +28,7 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 <img width="1251" height="648" alt="Container CPU/Memory Usage" src="https://github.com/user-attachments/assets/d5fac7d3-9703-46fe-842a-8e5c21f76400" />
 
 **4. Additional Terminal Output / Architecture Diagram**
-*Place your additional backend processing logs, autonomous tool demonstrations, or architecture diagrams here.*
-![Additional Terminal Preview](path/to/your/terminal/image.png)
+<img width="1343" height="907" alt="image" src="https://github.com/user-attachments/assets/21ef215b-066c-4718-8962-6de1617c9bee" />
 
 ## Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
