@@ -13,14 +13,23 @@ Built with privacy and performance in mind, LogSage ensures that sensitive produ
 - **Enterprise-Ready UI:** Implements Framer Motion and animated interaction patterns for seamless usability.
 - **Dockerized Architecture:** Easily deployable across environments with a single Docker Compose script.
 
-<img width="1216" height="873" alt="Pasted Graphic 4" src="https://github.com/user-attachments/assets/f234063b-019c-456d-8233-c93366184ab9" />
+### Project Showcase
 
-<br>
-<img width="817" height="909" alt="Pasted Graphic 6" src="https://github.com/user-attachments/assets/541d26ee-fdc1-47d1-8de4-e9593b187364" />
-<br>
-<img width="1251" height="648" alt="Container CPV usage C" src="https://github.com/user-attachments/assets/d5fac7d3-9703-46fe-842a-8e5c21f76400" />
-<br>
-![LangGraph Critic Loop Preview](path/to/your/langgraph_loop/image.png)
+**1. The SRE Dashboard (Real-Time Next.js Cockpit)**
+*The frontend interface where incoming logs are streamed via WebSockets and critical anomalies are instantly highlighted for the engineering team.*
+<img width="1216" height="873" alt="Cockpit Dashboard Preview" src="https://github.com/user-attachments/assets/f234063b-019c-456d-8233-c93366184ab9" />
+
+**2. The LangGraph Multi-Agent Terminal Output**
+*The raw backend thought process showcasing the LangGraph State Machine. Here, the Investigator Agent autonomously triggers Python tools (like checking database latency) and is repeatedly validated by the internal Lead Critic Agent until a perfect Root Cause Analysis is generated.*
+<img width="817" height="909" alt="LangGraph Terminal Output" src="https://github.com/user-attachments/assets/541d26ee-fdc1-47d1-8de4-e9593b187364" />
+
+**3. Infrastructure & Docker Utilization**
+*The execution environment running via a unified Docker Compose network. This showcases the independent microservices (FastAPI Backend, Next.js Frontend, Redis Cache, Neo4j Graph DB) executing fully offline with optimized resource isolation.*
+<img width="1251" height="648" alt="Container CPU/Memory Usage" src="https://github.com/user-attachments/assets/d5fac7d3-9703-46fe-842a-8e5c21f76400" />
+
+**4. Additional Terminal Output / Architecture Diagram**
+*Place your additional backend processing logs, autonomous tool demonstrations, or architecture diagrams here.*
+![Additional Terminal Preview](path/to/your/terminal/image.png)
 
 ## Architecture Stack
 * **Frontend:** Next.js (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
