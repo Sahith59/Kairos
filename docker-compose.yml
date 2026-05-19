@@ -9,35 +9,55 @@ services:
       - "8001:8001"
     environment:
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=password
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - OLLAMA_API_URL=http://host.docker.internal:11434/api/embeddings
+      - CHROMA_DATA_PATH=/app/data/chroma
+    volumes:
+      - backend_chroma_data:/app/data/chroma
     depends_on:
-      - redis
-      - neo4j
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8001
+        - NEXT_PUBLIC_WS_URL=ws://localhost:8001/ws
     ports:
       - "3000:3000"
     environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
       - NEXT_PUBLIC_WS_URL=ws://localhost:8001/ws
     depends_on:
       - backend
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   neo4j:
-    image: neo4j:latest
+    image: neo4j:5.20.0
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -45,7 +65,14 @@ services:
       - NEO4J_AUTH=neo4j/password
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:7474", "-O", "-"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
 volumes:
   redis_data:
   neo4j_data:
+  backend_chroma_data:

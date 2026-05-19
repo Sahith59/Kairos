@@ -1,27 +1,90 @@
-import Dashboard from '@/components/Dashboard';
+"use client";
+
+import HeroSection from "@/components/HeroSection";
+import ArchitectureSection from "@/components/ArchitectureSection";
+import Dashboard from "@/components/Dashboard";
+import TechStackSection from "@/components/TechStackSection";
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-50 p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <header className="flex items-center justify-between pb-4 border-b border-neutral-800">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              LogSage
-            </h1>
-            <p className="text-sm text-neutral-400 mt-1">AI-Native SRE Agent Cockpit</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs font-medium text-emerald-400 uppercase tracking-widest">System Active</span>
-          </div>
-        </header>
+  const scrollToCockpit = () => {
+    document.getElementById("cockpit")?.scrollIntoView({ behavior: "smooth" });
+  };
 
-        <Dashboard />
+  return (
+    <main>
+      <HeroSection onDemo={scrollToCockpit} />
+
+      {/* Architecture */}
+      <div style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border-subtle)" }}>
+        <ArchitectureSection />
       </div>
+
+      {/* Cockpit section */}
+      <div id="cockpit" style={{ background: "var(--bg-base)", borderTop: "1px solid var(--border-subtle)" }}>
+        <div style={{ maxWidth: 1440, margin: "0 auto", padding: "56px 24px 0" }}>
+          {/* Section header */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+              <h2 style={{
+                fontSize: "clamp(1.5rem, 3vw, 2rem)",
+                fontWeight: 800,
+                letterSpacing: "-0.025em",
+                fontFamily: "var(--font-display)",
+              }}>
+                Live{" "}
+                <span className="gradient-text-purple">Cockpit</span>
+              </h2>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "3px 10px", borderRadius: 100,
+                border: "1px solid rgba(16,185,129,0.25)",
+                background: "rgba(16,185,129,0.06)",
+              }}>
+                <span style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: "var(--emerald)",
+                  boxShadow: "0 0 6px var(--emerald)",
+                  display: "block",
+                }} />
+                <span style={{
+                  fontSize: 10, fontWeight: 700, color: "var(--emerald)",
+                  letterSpacing: "0.08em", textTransform: "uppercase",
+                  fontFamily: "var(--font-ui)",
+                }}>
+                  Live
+                </span>
+              </div>
+            </div>
+            <p style={{
+              color: "var(--text-muted)", fontSize: 13,
+              fontFamily: "var(--font-ui)",
+            }}>
+              Real-time WebSocket stream. Click &ldquo;Simulate Production Incident&rdquo; above to fire a demo incident and watch the AI agent investigate in real-time.
+            </p>
+          </div>
+
+          <Dashboard />
+        </div>
+      </div>
+
+      {/* Tech stack */}
+      <div style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border-subtle)" }}>
+        <TechStackSection />
+      </div>
+
+      {/* Footer */}
+      <footer style={{
+        textAlign: "center", padding: "32px 24px",
+        color: "var(--text-muted)", fontSize: 12,
+        borderTop: "1px solid var(--border-subtle)",
+        background: "var(--bg-base)",
+        fontFamily: "var(--font-ui)",
+      }}>
+        <p>
+          Built as a portfolio showcase demonstrating Agentic System Engineering.
+          &nbsp;·&nbsp; LangGraph &nbsp;·&nbsp; FastAPI &nbsp;·&nbsp; Next.js
+        </p>
+      </footer>
     </main>
   );
 }

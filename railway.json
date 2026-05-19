@@ -1,0 +1,36 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE"
+  },
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  },
+  "services": {
+    "backend": {
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "backend/Dockerfile",
+      "source": ".",
+      "env": {
+        "PORT": "8001",
+        "REDIS_HOST": "${{Redis.REDIS_HOST}}",
+        "REDIS_PORT": "${{Redis.REDIS_PORT}}",
+        "NEO4J_URI": "bolt://${{Neo4j.NEO4J_HOST}}:${{Neo4j.NEO4J_PORT}}",
+        "NEO4J_USER": "neo4j",
+        "NEO4J_PASSWORD": "${{Neo4j.NEO4J_PASSWORD}}",
+        "GROQ_API_KEY": "${{GROQ_API_KEY}}"
+      }
+    },
+    "frontend": {
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "frontend/Dockerfile",
+      "source": ".",
+      "env": {
+        "PORT": "3000",
+        "NEXT_PUBLIC_API_URL": "https://${{backend.RAILWAY_PUBLIC_DOMAIN}}",
+        "NEXT_PUBLIC_WS_URL": "wss://${{backend.RAILWAY_PUBLIC_DOMAIN}}/ws"
+      }
+    }
+  }
+}
