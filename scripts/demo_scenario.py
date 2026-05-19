@@ -4,7 +4,7 @@ import time
 API_URL = "http://localhost:8001/demo"
 
 def run_test():
-    print("🚀 Triggering LogSage Production Incident Demo...")
+    print("🚀 Triggering Kairos Production Incident Demo...")
     try:
         response = requests.post(API_URL)
         if response.status_code == 200:

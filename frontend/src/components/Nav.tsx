@@ -91,7 +91,7 @@ export default function Nav({ onIntegrate, onSettings }: NavProps) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {/* GitHub */}
         <a
-          href="https://github.com/Sahith59/LogSage"
+          href="https://github.com/Sahith59/Kairos"
           target="_blank"
           rel="noopener noreferrer"
           title="View on GitHub · Report issues · Open PRs"

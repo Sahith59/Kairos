@@ -4,7 +4,7 @@
 
 > *Kairos* (Greek: καιρός) — the decisive, opportune moment. The exact instant when conditions demand action.
 
-**GitHub:** https://github.com/Sahith59/LogSage · [Report an issue](https://github.com/Sahith59/LogSage/issues) · [Open a PR](https://github.com/Sahith59/LogSage/pulls)
+**GitHub:** https://github.com/Sahith59/Kairos · [Report an issue](https://github.com/Sahith59/Kairos/issues) · [Open a PR](https://github.com/Sahith59/Kairos/pulls)
 
 ---
 
@@ -113,8 +113,8 @@ Human SRE MTTR: ~23 minutes · **Kairos MTTR: ~8 seconds**
 ollama pull mistral:7b
 
 # Clone the repo
-git clone https://github.com/Sahith59/LogSage
-cd LogSage
+git clone https://github.com/Sahith59/Kairos
+cd Kairos
 
 # Start everything
 docker-compose up --build -d
@@ -272,7 +272,7 @@ FastAPI Backend
 
 ## Contributing
 
-Issues and PRs welcome: https://github.com/Sahith59/LogSage/issues
+Issues and PRs welcome: https://github.com/Sahith59/Kairos/issues
 
 ---
 
