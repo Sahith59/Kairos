@@ -12,7 +12,8 @@ services:
       - REDIS_PORT=6379
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=password
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - OLLAMA_API_URL=http://host.docker.internal:11434/api/embeddings
       - CHROMA_DATA_PATH=/app/data/chroma
@@ -32,13 +33,13 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:8001
-        - NEXT_PUBLIC_WS_URL=ws://localhost:8001/ws
+        - NEXT_PUBLIC_API_URL=http://${SERVER_IP:-localhost}:8001
+        - NEXT_PUBLIC_WS_URL=ws://${SERVER_IP:-localhost}:8001/ws
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8001
-      - NEXT_PUBLIC_WS_URL=ws://localhost:8001/ws
+      - NEXT_PUBLIC_API_URL=http://${SERVER_IP:-localhost}:8001
+      - NEXT_PUBLIC_WS_URL=ws://${SERVER_IP:-localhost}:8001/ws
     depends_on:
       - backend
     restart: unless-stopped
@@ -62,7 +63,7 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      - NEO4J_AUTH=neo4j/password
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}
     volumes:
       - neo4j_data:/data
     healthcheck:
